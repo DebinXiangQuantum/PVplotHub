@@ -22,10 +22,10 @@ plt.rcParams.update({
 COUNTRIES = ['China', 'United States', 'India', 'Germany', 'Japan', 'Spain', 'Australia', 'Mexico', 'Chile']
 
 # 定义颜色方案 (Nature 风格)
-COLOR_CENTRAL = '#E63946'  # 集中式：深红
-COLOR_DISTRIB = '#1D3557'  # 分布式：深蓝
+COLOR_CENTRAL = '#ff7b00'  # 集中式：深红
+COLOR_DISTRIB = '#4361ee'  # 分布式：深蓝
 
-def export_distribution_plots(excel_path, output_dir='exported_plots'):
+def export_distribution_plots(excel_path, output_dir='exported_plots/nationsFig2'):
     """
     批量导出九个国家的装机量分布图
     """
@@ -55,7 +55,7 @@ def export_distribution_plots(excel_path, output_dir='exported_plots'):
 
         # 创建符合比例的画布 (例如 40mm x 30mm)
         mm_to_inch = 1 / 25.4
-        fig, ax = plt.subplots(figsize=(45 * mm_to_inch, 35 * mm_to_inch))
+        fig, ax = plt.subplots(figsize=(25 * mm_to_inch, 15 * mm_to_inch))
 
         # 绘图逻辑：平滑曲线 + 渐变填充
         for col_name, color, label in [(col_c, COLOR_CENTRAL, 'Centralized'), 
@@ -70,17 +70,19 @@ def export_distribution_plots(excel_path, output_dir='exported_plots'):
                 y_smooth = np.maximum(spl(x_smooth), 0) # 确保无负值
                 
                 # 绘制主线
-                ax.plot(x_smooth, y_smooth, color=color, linewidth=0.8, zorder=3)
+                # ax.plot(x_smooth, y_smooth, color=color, linewidth=0.8, zorder=3)
                 
                 # 绘制 8 层渐变填充
                 for i in range(1, 9):
                     ax.fill_between(x_smooth, 0, y_smooth, color=color, 
                                    alpha=0.08 * (i / 8), linewidth=0, zorder=2)
+                # ax.fill_between(x_smooth, 0, y_smooth, color=color, alpha=0.7, linewidth=0, zorder=2)
 
         # 细节美化
-        ax.set_title(country, fontsize=7, fontweight='bold', pad=4)
-        ax.set_xlabel('Solar Radiation', fontsize=5)
-        ax.set_ylabel('Capacity', fontsize=5)
+        # ax.set_yscale('log')
+        # ax.set_title(country, fontsize=6, fontweight='bold', pad=-3)
+        ax.set_xlabel('Solar Radiation (MJ/m²)', fontsize=5)
+        ax.set_ylabel('Capacity (GW)', fontsize=5)
         
         # 移除上方和右侧边框
         ax.spines['top'].set_visible(False)
@@ -98,5 +100,5 @@ def export_distribution_plots(excel_path, output_dir='exported_plots'):
 
 if __name__ == "__main__":
     # 请确保路径正确
-    EXCEL_FILE = r"Fig2\excel\SolarDistributed.xlsx"
+    EXCEL_FILE = r"Fig2/excel/SolarDistributed.xlsx"
     export_distribution_plots(EXCEL_FILE)

@@ -8,6 +8,7 @@ from shapely.geometry import box
 import matplotlib as mpl
 import sys
 
+from matplotlib.colorbar import ColorbarBase
 mm_to_inch = 1 / 25.4
 nature_double_col_width = 180 * mm_to_inch
 
