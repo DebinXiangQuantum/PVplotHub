@@ -43,7 +43,6 @@ def export_distribution_plots(excel_path, output_dir='exported_plots/nationsFig2
         return
     df = df.sort_values(by='光照')
     x = df['光照'].values
-
     for country in COUNTRIES:
         # 尝试匹配列名（处理“国家 类别”或“类别 国家”两种情况）
         col_c = next((c for c in df.columns if country in c and '集中式' in c), None)
@@ -55,7 +54,11 @@ def export_distribution_plots(excel_path, output_dir='exported_plots/nationsFig2
 
         # 创建符合比例的画布 (例如 40mm x 30mm)
         mm_to_inch = 1 / 25.4
-        fig, ax = plt.subplots(figsize=(25 * mm_to_inch, 15 * mm_to_inch))
+        if country.lower() in ['chile','mexico','spain','india']:
+            widthmm =  18
+        else:
+            widthmm = 23
+        fig, ax = plt.subplots(figsize=(widthmm * mm_to_inch, 10 * mm_to_inch))
 
         # 绘图逻辑：平滑曲线 + 渐变填充
         for col_name, color, label in [(col_c, COLOR_CENTRAL, 'Centralized'), 
@@ -70,7 +73,7 @@ def export_distribution_plots(excel_path, output_dir='exported_plots/nationsFig2
                 y_smooth = np.maximum(spl(x_smooth), 0) # 确保无负值
                 
                 # 绘制主线
-                # ax.plot(x_smooth, y_smooth, color=color, linewidth=0.8, zorder=3)
+                ax.plot(x_smooth, y_smooth, color=color, linewidth=0.4, zorder=3)
                 
                 # 绘制 8 层渐变填充
                 for i in range(1, 9):
@@ -80,16 +83,19 @@ def export_distribution_plots(excel_path, output_dir='exported_plots/nationsFig2
 
         # 细节美化
         # ax.set_yscale('log')
-        # ax.set_title(country, fontsize=6, fontweight='bold', pad=-3)
-        ax.set_xlabel('Solar Radiation (MJ/m²)', fontsize=5)
-        ax.set_ylabel('Capacity (GW)', fontsize=5)
+        if country.lower() == "japan":
+            ax.text(0.55, 0.95, country, transform=ax.transAxes,fontweight='bold', va='top')
+        else:
+            ax.text(0.05, 0.95, country, transform=ax.transAxes, fontweight='bold', va='top')
+        ax.set_xlabel('Solar Radiation (MJ/m²)')
+        ax.set_ylabel('Capacity (GW)')
         
         # 移除上方和右侧边框
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         
         # 调整刻度
-        ax.tick_params(axis='both', which='major', labelsize=5, length=2, pad=1)
+        ax.tick_params(axis='both', which='major', length=2, pad=1)
         
         # 保存文件 (PDF 矢量格式最适合后期拼接)
         file_name = f"{country}_distribution.pdf"

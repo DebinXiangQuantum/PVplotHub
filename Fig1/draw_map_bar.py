@@ -10,10 +10,10 @@ from shapely.geometry import box
 # ================= 1. Nature 出版级全局设置 =================
 # 尺寸转换 (mm -> inch)
 mm_to_inch = 1 / 25.4
-nature_width_mm = 150
+nature_width_mm = 160
 fig_width = nature_width_mm * mm_to_inch
 # 宽高比：Robinson 投影通常宽:高约 2:1，考虑到柱状图空间，设为 0.6
-fig_height = fig_width * 0.45 
+fig_height = fig_width * 0.4 
 
 # 字体设置 (严苛模式)
 mpl.rcParams['font.family'] = 'sans-serif'
@@ -44,20 +44,36 @@ color_single = "#41b6c4"
 
 # --- 关键：统计图布局坐标 (Left, Bottom, Width, Height) ---
 # 坐标系为 Figure 坐标 (0~1)，针对 Robinson 投影的空白区域进行了微调
-chart_positions = {
-    # 北美：左上角 (太平洋东北部)
-    "North America": [0.08, 0.60, 0.12, 0.23],
-    # 南美：左下角 (太平洋东南部)
-    "South America": [0.19, 0.28, 0.12, 0.18],
-    # 欧洲：中上方 (北大西洋)
-    "Europe":        [0.36, 0.68, 0.12, 0.18],
-    # 非洲：中下方 (南大西洋或几内亚湾)
-    "Africa":        [0.43, 0.25, 0.12, 0.18],
-    # 亚洲：右上角 (俄罗斯/北太平洋)
-    "Asia":          [0.85, 0.65, 0.12, 0.23],
-    # 大洋洲：右下角 (南太平洋)
-    "Oceania":       [0.68, 0.21, 0.10, 0.23]
-}
+if PVtype == "分布式":
+    chart_positions = {
+        # 北美：左上角 (太平洋东北部)
+        "North America": [0.09, 0.60, 0.12, 0.3],
+        # 南美：左下角 (太平洋东南部)
+        "South America": [0.18, 0.23, 0.12, 0.18],
+        # 欧洲：中上方 (北大西洋)
+        "Europe":        [0.36, 0.68, 0.12, 0.25],
+        # 非洲：中下方 (南大西洋或几内亚湾)
+        "Africa":        [0.42, 0.15, 0.12, 0.18],
+        # 亚洲：右上角 (俄罗斯/北太平洋)
+        "Asia":          [0.84, 0.65, 0.12, 0.23],
+        # 大洋洲：右下角 (南太平洋)
+        "Oceania":       [0.63, 0.15, 0.10, 0.29]
+    }
+else:
+    chart_positions = {
+        # 北美：左上角 (太平洋东北部)
+        "North America": [0.09, 0.60, 0.12, 0.25],
+        # 南美：左下角 (太平洋东南部)
+        "South America": [0.18, 0.23, 0.12, 0.18],
+        # 欧洲：中上方 (北大西洋)
+        "Europe":        [0.36, 0.68, 0.12, 0.25],
+        # 非洲：中下方 (南大西洋或几内亚湾)
+        "Africa":        [0.42, 0.15, 0.12, 0.18],
+        # 亚洲：右上角 (俄罗斯/北太平洋)
+        "Asia":          [0.84, 0.65, 0.12, 0.23],
+        # 大洋洲：右下角 (南太平洋)
+        "Oceania":       [0.63, 0.15, 0.10, 0.29]
+    }
 
 # ================= 3. 数据处理 =================
 print("正在读取并处理数据...")
@@ -118,7 +134,7 @@ gdf_points['geometry'] = gdf_proj.geometry.centroid
 
 x = gdf_points.geometry.x
 y = gdf_points.geometry.y
-C = gdf_points[value_field]
+C = gdf_points[value_field]*0.2/1e6
 
 # ================= 4. 绘图主程序 =================
 fig = plt.figure(figsize=(fig_width, fig_height)) # 严格设定 180mm 宽
@@ -211,7 +227,7 @@ for region, pos in chart_positions.items():
         max_h = max(v)
 
     # --- 精细化调整样式 (Nature Style) ---
-    ax_sub.set_title(region, fontsize=7, fontweight='bold', pad=3)
+    ax_sub.set_title(region, fontweight='bold', pad=3)
     ax_sub.set_xlim(-0.6, len(nations)-0.4)
     ax_sub.set_ylim(0, max_h * 1.25) # 顶部留空写字
     
@@ -229,22 +245,25 @@ for region, pos in chart_positions.items():
     # ax_sub.set_facecolor('lightgray')
     ax_sub.set_facecolor('none')
     # Y轴刻度设置
-    ax_sub.tick_params(axis='y', labelsize=5, width=0.5, length=2, pad=1)
+    ax_sub.tick_params(axis='y',  width=0.5, length=2, pad=1)
     
     # 标注国家名 (放在柱子上方或内部)
     for i, nation in enumerate(nations):
         # 统一放在柱子底部上方一点，垂直显示
         label_y = max_h * 0.05
         ax_sub.text(i, label_y, nation, rotation=90, 
-                   ha='center', va='bottom', fontsize=5.5, zorder=5)
+                   ha='center', va='bottom',  zorder=5)
 
 # --- Step 5: 全局组件 ---
 
-# 色标 (放在底部正中)
-cax = fig.add_axes([0.35, 0.1, 0.3, 0.015])
-cb = plt.colorbar(hb, cax=cax, orientation="horizontal")
-cb.set_label("Solar PV Area (km$^2$)", fontsize=6)
-cb.ax.tick_params(labelsize=6, length=2, width=0.5)
+# 色标 (放在最右边，旋转90度)
+cax = fig.add_axes([0.98, 0.15, 0.012, 0.7])
+cb = plt.colorbar(hb, cax=cax, orientation="vertical")
+if PVtype == "集中式" :
+    cb.set_label("Installed Capacity of Utility-scale PV (GW)")
+elif PVtype == "分布式" :
+    cb.set_label("Installed Capacity of Distributed PV (GW)")
+cb.ax.tick_params(length=2, width=0.5)
 
 # 图例 (仅总量模式需要)
 if is_stacked:
@@ -253,7 +272,7 @@ if is_stacked:
     p2 = mpatches.Patch(color=color_util, label='Utility-scale')
     # 放在左下角或合适位置
     fig.legend(handles=[p1, p2], loc='lower left', bbox_to_anchor=(0.02, 0.05),
-               fontsize=6, frameon=False, ncol=1, title="PV Type", title_fontsize=6)
+               frameon=False, ncol=1, title="PV Type")
 
 # ================= 5. 保存输出 =================
 print(f"输出文件: {output_filename}")
