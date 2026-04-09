@@ -170,5 +170,5 @@ plt.tight_layout()
 
 # --- 6. 保存结果 ---
 print("Saving figure...")
-plt.savefig('exported_plots/solar_pv_combined_map.pdf', dpi=300, bbox_inches='tight')
+plt.savefig('Fig2/exported_plots/solar_pv_combined_map.pdf', dpi=300, bbox_inches='tight')
 print("Done.")

@@ -24,7 +24,7 @@ plt.rcParams.update({
 COLOR_CENTRAL = '#ff7b00'  # 集中式：深红
 COLOR_DISTRIB = '#4361ee'  # 分布式：深蓝
 
-def export_distribution_plots(excel_path, output_dir='exported_plots/nationsFig2'):
+def export_distribution_plots(excel_path, output_dir='Fig2/exported_plots/nationsFig2'):
     """
     批量导出九个国家的装机量分布图
     """
